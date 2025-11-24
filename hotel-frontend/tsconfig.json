@@ -1,0 +1,19 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ],
+  "compilerOptions": {
+    "baseUrl": "./src", // Indica que la raíz para las rutas es la carpeta 'src'
+    "paths": {
+      "@/components/*": ["components/*"],
+      "@/lib/*": ["lib/*"],
+      
+      // <<<--- AÑADIR ESTAS LÍNEAS FALTANTES:
+      "@/store/*": ["store/*"],
+      "@/api/*": ["api/*"],
+      "@/pages/*": ["pages/*"] // Útil para importaciones entre páginas
+    }
+  }
+}
