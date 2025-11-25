@@ -1,20 +1,34 @@
-// src/pages/Habitaciones/HabitacionesColumns.tsx
+import { type ColumnDef } from "@tanstack/react-table";
 
-import type { ColumnDef } from "@tanstack/react-table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+// Componentes UI
+import { Badge } from "@/components/ui/badge"; 
+import { PISOS_OPCIONES, getLabelByValue } from "@/lib/constants"; // Traducción de códigos
+import { HabitacionActions } from './HabitacionActions';
 
 
-// Tipo de datos (debe coincidir con la definición de Habitacion en HabitacionesPage.tsx)
+// --- 1. INTERFAZ DE DATOS (CRÍTICA) ---
+// Incluye tanto el código clave para el payload (ej: 'L') como el display legible (ej: 'Libre')
+type EstadoOcupacionKey = 'L' | 'R' | 'O';
+type EstadoServicioKey = 'L' | 'S' | 'E' | 'M';
+
 export interface Habitacion {
-    id: number; 
+    id: number;
     numero: string;
     piso: string;
+    tipo: number; // ID del Tipo (FK)
     tipo_nombre: string;
-    estado_ocupacion_display: string;
-    estado_servicio_display: string;
+    
+    // Claves del payload para editar
+    estado_ocupacion: EstadoOcupacionKey;
+    estado_servicio: EstadoServicioKey;
+    
+    // Claves display para la tabla
+    estado_ocupacion_display: string; 
+    estado_servicio_display: string;   
 }
 
+
+// --- 2. DEFINICIÓN DE COLUMNAS ---
 export const columns: ColumnDef<Habitacion>[] = [
   {
     accessorKey: "numero",
@@ -24,6 +38,10 @@ export const columns: ColumnDef<Habitacion>[] = [
   {
     accessorKey: "piso",
     header: "Piso",
+    // Traducción del código ('1', 'PB') a etiqueta ('Primer Piso', 'Planta Baja')
+    cell: ({ row }) => {
+        return getLabelByValue(PISOS_OPCIONES, row.original.piso);
+    }
   },
   {
     accessorKey: "tipo_nombre",
@@ -34,12 +52,14 @@ export const columns: ColumnDef<Habitacion>[] = [
     header: "Ocupación",
     cell: ({ row }) => {
       const status = row.original.estado_ocupacion_display;
-      let variant: 'secondary' | 'default' | 'destructive' = 'secondary';
-      if (status === 'Ocupada') variant = 'destructive';
-      if (status === 'Reservada') variant = 'default';
+      type BadgeVariant = "default" | "secondary" | "destructive";
+      // Usamos el tipo BadgeVariant definido
+        let variant: BadgeVariant = 'secondary'; 
+        if (status === 'Ocupada') variant = 'destructive';
+        if (status === 'Reservada') variant = 'default';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return <Badge variant={variant as any}>{status}</Badge>;
+        // 🚨 SOLUCIÓN: Usamos la variable directamente. TypeScript ahora lo acepta
+        return <Badge variant={variant}>{status}</Badge>;
     },
   },
   {
@@ -52,13 +72,15 @@ export const columns: ColumnDef<Habitacion>[] = [
       return <span className={color}>{service}</span>;
     },
   },
+  
+  // --- 3. COLUMNA DE ACCIONES (U & D) ---
+  // --- COLUMNA DE ACCIONES ---
   {
-    id: "acciones",
+    id: "actions",
     header: "Acciones",
-    cell: () => (
-      <Button variant="outline" size="sm">
-        Ver Detalle
-      </Button>
-    ),
+    cell: ({ row }) => {
+      // 🚨 SOLUCIÓN: Renderizar el componente aquí, pasando los datos de la fila
+      return <HabitacionActions habitacion={row.original} />; 
+    },
   },
 ];
